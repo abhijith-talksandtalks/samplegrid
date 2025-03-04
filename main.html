@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background-color: dodgerblue; overflow: hidden; }
+    
+    .input-container {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 5px;
+      z-index: 10;
+    }
+    
+    .video-tile {
+      background-color: #1E90FF;
+      border: 2px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: black;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .dummy-tile {
+      background-color: transparent;
+      border: none;
+    }
+    
+    .row-container {
+      display: grid;
+      width: 100vw;
+    }
+  </style>
+</head>
+<body>
+  <div class="input-container">
+    <label for="userCount">Number of participants (1–20):</label>
+    <input type="number" id="userCount" min="1" max="20" value="1">
+    <button onclick="generateVideoGrid()">Generate Layout</button>
+  </div>
+  <div id="videoContainer"></div>
+  
+  <script>
+    function createTile(index) {
+      const tile = document.createElement('div');
+      tile.className = 'video-tile';
+      tile.textContent = `Participant ${index}`;
+      return tile;
+    }
+    
+    function createDummyTile() {
+      const tile = document.createElement('div');
+      tile.className = 'video-tile dummy-tile';
+      return tile;
+    }
+    
+    function generateVideoGrid() {
+      const container = document.getElementById('videoContainer');
+      const userCount = parseInt(document.getElementById('userCount').value);
+      container.innerHTML = '';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      
+      if (userCount === 1) {
+        // 1 Participant → Full screen.
+        const row = document.createElement('div');
+        row.className = 'row-container';
+        row.style.gridTemplateColumns = '1fr';
+        row.style.height = '100vh';
+        row.appendChild(createTile(1));
+        container.appendChild(row);
+        
+      } else if (userCount === 2) {
+        // 2 Participants → Side by side, sharing full height.
+        const row = document.createElement('div');
+        row.className = 'row-container';
+        row.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        row.style.height = '100vh';
+        for (let i = 1; i <= 2; i++) {
+          row.appendChild(createTile(i));
+        }
+        container.appendChild(row);
+        
+      } else if (userCount === 3) {
+        // 3 Participants:
+        // Top row: Participant 1 spans full width (50vh).
+        // Bottom row: Participants 2 and 3 share the width equally (50vh).
+        const row1 = document.createElement('div');
+        row1.className = 'row-container';
+        row1.style.gridTemplateColumns = '1fr';
+        row1.style.height = '50vh';
+        row1.appendChild(createTile(1));
+        
+        const row2 = document.createElement('div');
+        row2.className = 'row-container';
+        row2.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        row2.style.height = '50vh';
+        row2.appendChild(createTile(2));
+        row2.appendChild(createTile(3));
+        
+        container.appendChild(row1);
+        container.appendChild(row2);
+        
+      } else if (userCount === 4) {
+        // 4 Participants → 2×2 grid.
+        const rows = 2;
+        let tileIndex = 1;
+        for (let r = 0; r < rows; r++) {
+          const row = document.createElement('div');
+          row.className = 'row-container';
+          row.style.gridTemplateColumns = 'repeat(2, 1fr)';
+          row.style.height = (100 / rows) + 'vh'; // 50vh each
+          for (let c = 0; c < 2; c++) {
+            row.appendChild(createTile(tileIndex));
+            tileIndex++;
+          }
+          container.appendChild(row);
+        }
+        
+      } else if (userCount === 5) {
+        // 5 Participants:
+        // Top row: First 3 participants share the width equally (each 1/3, 50vh).
+        // Bottom row: Next 2 participants each take half width (50vh).
+        const row1 = document.createElement('div');
+        row1.className = 'row-container';
+        row1.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        row1.style.height = '50vh';
+        row1.appendChild(createTile(1));
+        row1.appendChild(createTile(2));
+        row1.appendChild(createTile(3));
+        
+        const row2 = document.createElement('div');
+        row2.className = 'row-container';
+        row2.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        row2.style.height = '50vh';
+        row2.appendChild(createTile(4));
+        row2.appendChild(createTile(5));
+        
+        container.appendChild(row1);
+        container.appendChild(row2);
+        
+      } else {
+        // For 6 or more participants.
+        // Use 3 columns if userCount <= 12; otherwise 4 columns.
+        const columns = (userCount <= 12) ? 3 : 4;
+        const rows = Math.ceil(userCount / columns);
+        let tileIndex = 1;
+        for (let r = 0; r < rows; r++) {
+          const row = document.createElement('div');
+          row.className = 'row-container';
+          row.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+          row.style.height = (100 / rows) + 'vh';
+          for (let c = 0; c < columns; c++) {
+            if (tileIndex <= userCount) {
+              row.appendChild(createTile(tileIndex));
+            } else {
+              row.appendChild(createDummyTile());
+            }
+            tileIndex++;
+          }
+          container.appendChild(row);
+        }
+      }
+    }
+    
+    window.onload = generateVideoGrid;
+  </script>
+</body>
+</html>
